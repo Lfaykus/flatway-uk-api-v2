@@ -171,14 +171,12 @@ def search_by_address(q: str = Query(..., description="Address or postcode")):
     q_clean = q.strip().upper()
 
     cur.execute("""
-        SELECT DISTINCT ON (postcode, address1)
-            certificate_number, address1, address2, address3,
+        SELECT certificate_number, address1, address2, address3,
             posttown, postcode, uprn, current_energy_rating
         FROM epc_certificates
-        WHERE lower(postcode) LIKE lower(%s) OR lower(address1) LIKE lower(%s) OR address ILIKE %s
-        ORDER BY postcode, address1, lodgement_date DESC
+        WHERE lower(postcode) LIKE %s OR lower(address1) LIKE %s
         LIMIT 20
-    """, (f"{q_clean}%", f"{q_clean}%", f"%{q_clean}%"))
+    """, (q_clean.lower() + "%", q_clean.lower() + "%"))
 
     rows = cur.fetchall()
     cur.close()
